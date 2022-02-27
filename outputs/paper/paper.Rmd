@@ -159,7 +159,8 @@ as_tibble(t1_clean)%>%
 
 # Variable list
 varlist <- c('top10phd', "top20phd", "top40phd", "phd_forn", "acadfirstjob", 
-"firstjobtop10", "firstjobtop20", "firstjobtop40", "phdyr")
+"firstjobtop10", "firstjobtop20", "firstjobtop40", "phdyr", "tenurejobtop30", "tenurejobtop50", "tenurejobtop100",
+"tenurejobtop200", "tenurejobtop201")
 
 # create data frame and initialize vectors
 ttests <- data.frame(varlist)
@@ -207,6 +208,22 @@ test_res <- data %>%
   pairwise_t_test(phdyr ~ treat)
 res_vec[9] <- test_res[["p"]]
 
+test_res <- data %>%
+  pairwise_t_test(tenurejobtop30 ~ treat)
+res_vec[10] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(tenurejobtop50 ~ treat)
+res_vec[11] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(tenurejobtop100 ~ treat)
+res_vec[12] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(tenurejobtop200 ~ treat)
+res_vec[13] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(tenurejobtop201 ~ treat)
+res_vec[14] <- test_res[["p"]]
+
 ttests["pvalue"] <- res_vec
 
 # rename
@@ -229,7 +246,7 @@ as_tibble( ttests)%>%
 ```
 
 
-     Table 2 then shows a comparison of Ph.D. degrees and job rankings between the treatment and control groups. Columns “Treatment” and “Control” show the mean percentage of participants in that group with a Ph.D. ranking or job ranking listed on the left-hand side. A pairwise t-test from the rstatix package [@rstatix] is then conducted to assess whether these differences in means are statistically significant. From the “p-value” column, it shows clearly that none of these mean differences are statistically significant as p values are greater than 0.1, in other words, there are no differences in the mean of the Ph.D. jobs participants have received with or without the treatment. 
+     Table 2 then shows a comparison of Ph.D. degrees and job rankings between the treatment and control groups. Columns “Treatment” and “Control” show the mean percentage of participants in that group with a Ph.D. ranking or job ranking listed on the left-hand side. A pairwise t-test from the rstatix package [@rstatix] is then conducted to assess whether these differences in means are statistically significant. From the “p-value” column, it shows clearly that none of these mean differences are statistically significant as p values are greater than 0.1, in other words, there are no differences in the mean of the Ph.D. jobs participants have received with or without the treatment. However, this report did find that the tenure job rankings mean are statistically significant in terms of the mean of treatment and control groups. This will be further elaborated on the next paragraph.
 
 ```{r warning=FALSE, fig.cap="IV Regression", message = FALSE, echo=FALSE}
 
@@ -323,12 +340,23 @@ as_tibble(cbind(nms=c("Treat", "Constant"), t(t3)))%>%
 
      However, table 3 shows the relationships between treatment and tenure job rankings. This report utilizes ivreg package [@ivreg] to produce several Instrument Variable Regressions on the Treat variable and tenure job rankings. In each model, the cohorts and the years 8 up to 16 after Ph.D. are included as the exogenous variable, the treat variable is the endogenous variable, and the firsttimec is the Instrument. The table clearly shows that the Treatment Variable does affect parts of the tenure jobs acquired, specifically the Top 100 Tenure Stream, which increased by almost 16% if received treatment. Other noticeable increases in percentages include tenure-stream and Tenured top 50. 
 
+     Furthermore, in table 2, the p-values of the top tenure job rankings enforces this outcome as the p-value is statistically significant. Therefore, these findings are correlated to each other while the IV regression may provide more information on the percentage increase after treatment.
+
      This result shows that receiving the treatment is correlated with the various tenured streams, therefore exhibiting the effectiveness of the CeMENT workshop. 
 
+# Discussion
+
+     The original paper has raised many interesting claims and discoveries. It has found through the t-test in table 2 that there are no statistically significant difference in the mean of the the treated patients and control group patients in the Ph.D. and academic job field. However, they did find correlation between treatments and tenured jobs. This raises a question on what if the tests are reversed. Would the t-test of the means of treatment and control group be statistically significant. This new investigation is made in this report as shown in table 2 and 3 where the top tenure job rankings are performed in both tables. 
+
+     It shows that the two analysis seems to be correlated as these variables are both statistically significant in the t-test and the IV regression. This finding has definitely reinforced the author's original claim and this report suggests more repeating experiments on other variables are made to serve a stronger claim. One example can be to include academic job and Ph.D. rankings to also be included in the Regression to investigate the relationship between treatment and these variables. 
+
+     Furthermore, as a future suggestion, the researchers could include more quantitative variables that ranks the participant's participation and discussion rating. This could serve as a factor influencing the participant's value and learning curve during the workshop and can further identify whether eager participation in the CeMENT workshop yields greater outcomes. This would also help with the original claim as participants who are active in the workshop may obtain more information and learn more about the roadmap to success than other non active participants.
 
 # Conclusion
 
      Although there is no statistically significant difference in the means of jobs and Ph.D. institutions with the treatment, this report concludes that the treatment does help participants increase their chances in a better-tenured job. More specifically, it has increased the chances of receiving a top 50 tenured job by almost 10%. This proves the effectiveness of the CeMENT workshop and concludes that this workshop has reached its goal of helping underrepresented women in the field of economics. 
+
+     The suggestions listed in the Discussion section could also be considered for future research on the CeMENT workshop as this workshop is still being held annually. These suggestions may also open up to improvements of the CeMENT workshop to facilitate the American Economic Association and the Committee on the Status of Women in the Economics Profession to reach their goal of empowering women in the field of economics.
 
 # Limitations
 
