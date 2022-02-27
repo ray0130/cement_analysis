@@ -1,0 +1,353 @@
+---
+title: "Effectiveness and Impact of the CeMENT Workshop"
+author: 
+  - Ray Wen
+thanks: "Code and data are available at: https://github.com/ray0130/cement_analysis."
+date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: "Recognizing the grave gender gap in the academic field of economics, the American Economic Association and the Committee on the Status of Women in the Economics Profession initiated a program called CeMENT workshop. This workshop aims to empower women and strengthen their competitiveness in the academic field of economics. This report reproduces a previous paper that investigates the effectiveness and the career impact the CeMENT workshop has on the participants by conducting a randomized treatment and controlled group experiment. Both the original paper and this reproduction has found evidence that the CeMENT workshop does have an impact on women's career after participating in the workshop, especially in academic jobs."
+output:
+  bookdown::pdf_document2
+header-includes:
+   - \usepackage{setspace}
+   - \doublespacing
+fontsize: 12pt
+indent: true
+toc:
+  FALSE
+bibliography: references.bib
+---
+
+```{r setup, warning=FALSE, message = FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Set seed for reproducibility
+set.seed(1234)
+# Load libraries
+library(tidyverse)
+library(dplyr)
+library(kableExtra)
+library(ivreg)
+library(rstatix)
+
+# Load Data from pre processed Script
+data <- read_csv("../../inputs/cement.csv")
+
+```
+
+^[ DOI: https://doi.org/10.48152/ssrp-4797-g140 ]
+
+# Introduction
+
+     Women have constantly been underrepresented in the field of economics, making up only 30% of the doctoral students in economics with no sign of growth [@neu]. Some believe that it is due to the lack of role models and the presence of sexism that were interfering with women and their aspirations in continuing in the academic field of economics. [@convo] With this in mind, the Committee on the Status of Women in the Economics Profession (CSWEP) of the American Economics Association (AEA) hopes to empower women through a workshop named CeMENT, allowing women to access various resources and training to empower women in the academic field of economics and hoping to reduce the gender gap in the field of economics. [@aea]
+
+     This report is a reproduction of the paper “Can Mentoring Help Female Assistant Professors in Economics? An Evaluation by Randomized Trial” [@paper].
+	
+     This report will translate the original STATA Code by utilizing R Statistical Programming Language[@citeR], tidyverse package [@citetidyverse], and dplyr package [@dplyr] to produce analysis and knitr[@knitr] and bookdown[@citebookdown] to produce the report. Furthermore, KableExtra[@kableExtra] is used to produce tables.
+	
+     In the Data Section, this report will provide an explanation of the data source, collection methodology, and the overall data structure that was used in the analysis. The Results section will show various tests and regression models that will ultimately lead to the conclusion stated.
+
+
+# About The CeMENT Workshop
+
+     The national CeMENT Workshop is designed for women in the economic field of profession. It was founded by the Committee on the Status of Women in the Economics Profession (CSWEP) of the American Economics Association (AEA), aiming to provide information and training on the roadmap to be successful in the economic field. It also invites role models such as senior female economists where they act as keynote speakers to share their stories and successes. Some senior female economists including Melanie Khamis [@wesleyan], who is an Associate Professor in Economics, specializing in Labor Economics, Development Economics, and  Applied Microeconomics at Wesleyan University. Participants were also exposed to a wide range of networks with the American Economic Association(AEA), numerous senior female economists, as well as their fellow participants. Each workshop was held alongside the AEA annual meetings and it has a duration of 2 days. Participants worked in groups of 4-5 and had a chance to share their research work amongst other group members to receive crucial feedback. 
+
+
+
+
+
+
+# Data
+
+## Data Source and Collection Methodology
+
+     Each year, the CeMENT workshop had an abundant amount of applications that greatly exceeded the availability limit of each workshop. After each application has been screened and eliminated the incomplete, inappropriate, or ineligible applications, the remaining were split into groups of study, Treatment, or Control group. 
+
+     The data was directly sourced from the list of participants of the CeMENT workshop. Each participants' information is then recorded as well as their groups (Treatment or Control). 
+
+     During the time of producing the original report, the researchers first attempted to search the participants through website services such as Linkedin and University contact details to obtain their current employment status. They were able to contact most of the participants directly to obtain their resumes/CVs to have accurate information. However, for the participants who the researchers were unable to obtain information, they relied on their website profile such as Linkedin to obtain information of their employment status.  The researchers also produced a web scraping program using Python, which searches information regarding publications and grants of the participants on the Web of the Service interface. The Grants searched include all grants offered by the National Science Foundation (NSF) and National Institutes of Health (NIH) in which the participant was considered the principal investigator. Although these programs and web services do allow researchers to obtain more information on the participants, they have emphasized that they “do not have information on articles that were forthcoming at the time tenure decisions were made nor on grants from sources other than NSF and NIH.” [@paper]
+
+     The researchers also verified the tenure status of the participants through online curriculum vitae and from official University websites. They described several decisions that dictate if a participant is tenured. They stated that if a university did not report any untenured associate professors, they assume every participant at that University with the title of Associate Professor was tenured. They also assumed the participant is tenured if the participant reported themselves as a Full Professor. And they also contacted participants to verify their tenure status if they were unable to determine through the process described above. 
+
+     The researchers have identified a few minor issues regarding the first publication of the paper. They provided information on the error in the previous treatment variable and the instrument for the Instrument Variable Regression (IV Regression) was incorrectly merged. They also mentioned a coding error in three of the participants who reapplied to the CeMENT Workshop. They have made the changes to their new edit of the paper, however, these errors did not affect the outcome of the final result.
+
+
+## Data Characteristics
+
+     The data provided in the reproduction package of this paper has 365 observations and 40 variables, containing several variables, most of which are entries of 0 and 1 dummy variables to indicate True/False variables. 
+
+     The variables this report will be focusing on are: 
+
+* "Tenuretopxx": These variables contain the tenure job ranking of journals and the world rankings of institutions in economics from [@paper]. The xx indicates the top ranking of the tenure, which contains values 30, 50, 100, 200, and 200+. They are entries of 0 and 1 where 0 indicates the tenured job of the participant is not within this range of ranking and 1 indicates the tenured job of the participant is within this range of ranking.
+
+*"Firstjobxx": These variables indicate the rank of the first job the participants have received. The xx indicates the top ranking of the job, which contains values 10, 30, 40, 100, 200, 200+. The variables are also entries of 0 and 1, where 0 indicates the participant’s first job is not within this range of ranking, and 1 indicates the participant’s first job is within this range of ranking.
+
+*Acadfirstjob: This variable indicates whether the participant’s first job is within the academic field, where 0 indicates the participant’s first job is not within the academic field and 1 indicates the participant’s first job is within the academic field.
+
+*Treat: A 0 of this variable indicates this participant has never received treatment in the CeMENT Workshop, and 1 indicates the participant has received treatment in the CeMENT Workshop. 
+
+*Phdyr: the year the participant has received their Ph.D. Degree.
+
+*Phd_forn: this variable indicates 0 if the participant received their Ph.D. degree within the United States and 1 if the participant received their Ph.D. degree in a foreign country/institute.
+
+*Topxxphd: These variables indicate the ranking of the participant’s Ph.D. institution. The xx indicates the ranking of the institute, which contains values 10, 20, 40. Entry of 0 indicates the participant’s Ph.D. institution is not within this range of ranking and 1 indicates it is.
+
+*Tenure2: This variable indicates whether the participant has received tenure as a Professor or Associate Professor.
+
+*Cohorts: this variable indicates the group the participants were assigned to during the workshop.
+
+*Reapplied: This variable indicates whether the participant has reapplied to the CeMENT workshop.
+
+*Tensamp: this variable indicates whether the participants have received their Ph.D. degree for 6 or more years.
+
+*Tenstream: this variable indicates whether the participant is employed as a Professor, Associate Professor, or Assistant Professor.
+
+*Tenstreamtop: this variable indicates whether the participant is within the top 100 departments.
+
+*Nonacadlastjob: this variable indicates whether the participant’s previous job was in the academic field.
+
+*Firsttimec: This variable indicates whether the participant has received treatment from the CeMENT workshop the first time they have applied.
+
+*YrsphdX: This variable indicates the number of years since their Ph.D. degree. This report uses the variables yrsphd8 up to yrsphd16.
+
+# Results
+
+     This replication focuses on the data analysis and the reproduction of the Instrument Variable Regression to gain information on how receiving treatment from the CeMENT Workshop affects the participant’s tenure job rankings. 
+
+```{r warning=FALSE, fig.cap="Distribution of each cohort", message = FALSE, echo=FALSE}
+
+# table 1
+
+# year vector
+year <- c("2004", "2006", "2008", "2010", "2012", "2014")
+# Summarize statistics
+t1_clean <- data%>% group_by(cohortc)%>%
+  summarize(
+    treatment=length(which(firsttimec==1&treat==1)),
+    control=length(which(firsttimec==0|treat==0)),
+    reapplied=sum(reapplied),
+    retreat=sum(treat-firsttimec)
+  )
+t1_clean$year <- year
+
+# reorder
+t1_clean <- t1_clean[, c(1, 6, 2, 3, 4, 5)]
+
+# Produce table
+as_tibble(t1_clean)%>%
+  knitr::kable(col.names = c(
+                             "Cohort",
+                             "Year",
+                             "Treatment",
+                             "Control",
+                             "Reapplied",
+                             "Reapplied and Treated"),
+               booktabs = TRUE,
+               escape = FALSE,
+               caption = "Distribution of each cohort"
+  ) %>%
+  column_spec(1:6, width = "4em") %>%
+  kableExtra::kable_styling()
+```
+
+
+     To start, table 1 provides an overview of each cohort, which are the study groups each participant is assigned to. As we can see from the “Treatment” and “Control” columns, the Treatment count is typically higher than the Control count since the researchers selected more participants than non-participants as “​​an effort to maximize access to the program” [@paper]. 
+
+     Furthermore, a problem the researchers noted was non-participants reapplying to the CeMENT Workshop. Although this would affect the treatment and control group sample size, to maximize the accessibility of this program, the researchers accepted some of the reapplied participants as seen in columns “Reapplied” and “Reapplied and Treated”.
+
+```{r warning=FALSE, fig.cap="pairwise t-tests", message = FALSE, echo=FALSE}
+
+#table2
+
+# Variable list
+varlist <- c('top10phd', "top20phd", "top40phd", "phd_forn", "acadfirstjob", 
+"firstjobtop10", "firstjobtop20", "firstjobtop40", "phdyr")
+
+# create data frame and initialize vectors
+ttests <- data.frame(varlist)
+
+res_vec <- c()
+treat_vec <- c()
+control_vec <- c()
+
+# find mean of each variable
+for (i in 1:length(varlist)){
+  treat_vec[i] <- round(mean(data[[varlist[i]]][which(data$treat==TRUE)]), digits=3)
+  control_vec[i] <- round(mean(data[[varlist[i]]][which(data$treat==FALSE)]), digits=3)
+}
+
+ttests$treatment <- treat_vec
+ttests$control <- control_vec
+
+# Conduct pair wise t test
+test_res <- data %>%
+  pairwise_t_test(top10phd ~ treat)
+res_vec[1] <- test_res[["p"]]
+
+test_res <- data %>%
+  pairwise_t_test(top20phd ~ treat)
+res_vec[2] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(top40phd ~ treat)
+res_vec[3] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(phd_forn ~ treat)
+res_vec[4] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(acadfirstjob ~ treat)
+res_vec[5] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(firstjobtop10 ~ treat)
+res_vec[6] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(firstjobtop20 ~ treat)
+res_vec[7] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(firstjobtop40 ~ treat)
+res_vec[8] <- test_res[["p"]]
+test_res <- data %>%
+  pairwise_t_test(phdyr ~ treat)
+res_vec[9] <- test_res[["p"]]
+
+ttests["pvalue"] <- res_vec
+
+# rename
+ttests[[1]][4] <- "phd forn"
+
+# produce table
+as_tibble( ttests)%>%
+  knitr::kable(col.names = c(
+                             "",
+                             "Treatment",
+                             "Control",
+                             "p value"),
+               booktabs = TRUE,
+               escape = FALSE,
+               caption = "pairwise t-tests"
+  ) %>%
+  column_spec(1, width = "14em") %>%
+  column_spec(2:4, width = "4em") %>%
+  kableExtra::kable_styling()
+```
+
+
+     Table 2 then shows a comparison of Ph.D. degrees and job rankings between the treatment and control groups. Columns “Treatment” and “Control” show the mean percentage of participants in that group with a Ph.D. ranking or job ranking listed on the left-hand side. A pairwise t-test from the rstatix package [@rstatix] is then conducted to assess whether these differences in means are statistically significant. From the “p-value” column, it shows clearly that none of these mean differences are statistically significant as p values are greater than 0.1, in other words, there are no differences in the mean of the Ph.D. jobs participants have received with or without the treatment. 
+
+```{r warning=FALSE, fig.cap="IV Regression", message = FALSE, echo=FALSE}
+
+# Table 3
+
+# variables used
+varlist <- c("tenstream", "tenstreamtop", "tenure2", "tenurejobtop30", "tenurejobtop50", "tenurejobtop100",
+"tenurejobtop200", "tenurejobtop201", "nonacadlastjob")
+
+# Create result data frame and copy original data
+reg_t3 <- data.frame(varlist)
+t3 <- data
+
+# Empty arrays to store information
+treat_coef <- c()
+const_coef <- c()
+p_val_treat <- c()
+p_val_const <- c()
+treat_disp <- c()
+const_disp <- c()
+
+# Conduct IV Reg on each variable list
+for (i in 1:length(varlist)){
+  lr <- ivreg(t3[[varlist[i]]]  ~ t3$cohortc + data$yrsphd8 + data$yrsphd9 + data$yrsphd10 + data$yrsphd11 + data$yrsphd12 + data$yrsphd13 + data$yrsphd14 + data$yrsphd15 + data$yrsphd16 | t3$treat| t3$firsttimec)
+  # Display coefficients
+  # summary(lr)$coefficients[,4] 
+  # Store coefficients
+  treat_coef[i] <- round(lr["coefficients"][1][[1]][2], digits = 3)
+  const_coef[i] <-round(lr["coefficients"][1][[1]][1], digits = 3)
+  # Store p value and their **
+  const_p <- summary(lr)$coefficients[,4][1]
+  if (const_p < 0.01 ){
+    p_val_const[i] <- "***"
+  } else if (const_p < 0.05 ){
+    p_val_const[i] <- "**"
+  } else if (const_p < 0.10 ){
+    p_val_const[i] <- "*"
+  } else {
+    p_val_const[i] <- ""
+  }
+  treat_p <- summary(lr)$coefficients[,4][2]
+  if (treat_p < 0.01 ){
+    p_val_treat[i] <- "***"
+  } else if (treat_p < 0.05 ){
+    p_val_treat[i] <- "**"
+  } else if (treat_p < 0.10 ){
+    p_val_treat[i] <- "*"
+  } else {
+    p_val_treat[i] <- ""
+  }
+  # Store value
+  treat_disp[i] <- paste(treat_coef[i], p_val_treat[i], sep = " ")
+  const_disp[i] <- paste(const_coef[i], p_val_const[i], sep = " ")
+  p_val_const[i] <- summary(lr)$coefficients[,4][1]
+  p_val_treat[i] <- summary(lr)$coefficients[,4][2]
+}
+# Store value in data frame
+reg_t3$treat <- treat_coef
+reg_t3$const <- const_coef
+reg_t3$treatp <- p_val_treat
+reg_t3$constp <- p_val_const
+reg_t3$treatdisp <- treat_disp
+reg_t3$constdisp <- const_disp
+
+# clean up data frame
+t3 <- reg_t3 %>% select(c(treatdisp, constdisp))
+
+
+
+# Produce Table
+as_tibble(cbind(nms=c("Treat", "Constant"), t(t3)))%>%
+  knitr::kable(col.names = c("",
+                             "Tenure stream", 
+                             "Top 100 Tenure Stream", 
+                             "Any Tenure", 
+                             "Tenured Top 30", 
+                             "Tenured Top 50", 
+                             "Tenured Top 100",
+                             "Tenured Top 200", 
+                             "Tenured 201+", 
+                             "Last Job Non- Academic"),
+               booktabs = TRUE,
+               escape = FALSE,
+               caption = "IV Regression"
+  ) %>%
+  column_spec(1:10, width = "3em") %>%
+  kableExtra::kable_styling() %>%
+  add_footnote("*: p < 0.1, **: p < 0.05, ***: p < 0.01")
+```
+
+
+     However, table 3 shows the relationships between treatment and tenure job rankings. This report utilizes ivreg package [@ivreg] to produce several Instrument Variable Regressions on the Treat variable and tenure job rankings. In each model, the cohorts and the years 8 up to 16 after Ph.D. are included as the exogenous variable, the treat variable is the endogenous variable, and the firsttimec is the Instrument. The table clearly shows that the Treatment Variable does affect parts of the tenure jobs acquired, specifically the Top 100 Tenure Stream, which increased by almost 16% if received treatment. Other noticeable increases in percentages include tenure-stream and Tenured top 50. 
+
+     This result shows that receiving the treatment is correlated with the various tenured streams, therefore exhibiting the effectiveness of the CeMENT workshop. 
+
+
+# Conclusion
+
+     Although there is no statistically significant difference in the means of jobs and Ph.D. institutions with the treatment, this report concludes that the treatment does help participants increase their chances in a better-tenured job. More specifically, it has increased the chances of receiving a top 50 tenured job by almost 10%. This proves the effectiveness of the CeMENT workshop and concludes that this workshop has reached its goal of helping underrepresented women in the field of economics. 
+
+# Limitations
+
+     As mentioned previously in the Data Collection Section, the researchers were unable to obtain direct information from some of the participants, and their information can only be inferred through online web services and social network platforms. This may cause a misdirection as this information may be outdated or untruthful(though unlikely). 
+
+     Furthermore, the researchers’ reproduction package and original paper lacked explanation on the analysis methodologies and justifications, they also failed to explain the original STATA code through comments or user ReadMe file, which may result in a slight implementation difference of reproduction in R. 
+	
+     An improvement this report would provide to the original authors is to include more details in the analysis process and justifications to facilitate readers' understanding of their final decision.
+
+
+# Next Steps
+
+     As the aforementioned results provide concrete evidence that the CeMENT workshop does help women in developing in the academic field of economics, it provides a great first step in empowering female economists. As mentioned previously, the CeMENT workshop receives a number of applications greatly exceeding their availability, therefore more similar workshops should be initiated to increase the accessibility of training and networks. This workshop sheds a light on the roadmap to reduce gender gaps in the economic field, and there are high hopes that this gender gap could be further reduced in the near future.
+
+
+
+\newpage
+
+
+# References
+
+
